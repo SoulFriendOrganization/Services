@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from schemas.usersSchema import CreateUserRequest, CreateUserResponse
 from utils.auth import get_password_hash, verify_password, create_access_token
 
-def create_user(db:Session, user_data:CreateUserRequest) -> User:
+def create_users(db:Session, user_data:CreateUserRequest) -> User:
     """
     Create a new user in the database.
     
@@ -22,12 +22,14 @@ def create_user(db:Session, user_data:CreateUserRequest) -> User:
         full_name=user_data.full_name,
         age=user_data.age
     )
+    db.add(db_user)
+    db.commit()
+    print(f"Created user with ID: {db_user.id}")
     db_user_auth = UserAuth(
         user_id=db_user.id,
         username=user_data.username,
         password=hashed_password
     )
-    db.add(db_user)
     db.add(db_user_auth)
     db.commit()
     db.refresh(db_user)
@@ -40,7 +42,7 @@ def create_user(db:Session, user_data:CreateUserRequest) -> User:
     )
     return response
 
-def login_user(db: Session, username: str, password: str) -> str:
+def login_users(db: Session, username: str, password: str) -> str:
     """
     Log in a user by verifying the username and password.
     
@@ -53,5 +55,5 @@ def login_user(db: Session, username: str, password: str) -> str:
     user_hashed_password = user_auth.password if user_auth else None
     if not user_auth or not verify_password(password, user_hashed_password):
         raise ValueError("Invalid username or password")
-    access_token = create_access_token(data={"user_id": user_auth.user_id, "username": user_auth.username})
+    access_token = create_access_token(data={"user_id": str(user_auth.user_id), "username": user_auth.username})
     return access_token

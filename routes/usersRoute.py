@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schemas.usersSchema import CreateUserRequest, CreateUserResponse
-from controllers.usersController import create_user, login_user
+from controllers.usersController import create_users, login_users
 from fastapi.security import OAuth2PasswordRequestForm
 
-router = APIRouter(tags=["users"])
+router = APIRouter()
 
 # ****** Users Endpoints ******
 @router.post("/register", status_code=201, response_model=CreateUserResponse)
@@ -22,26 +22,28 @@ def create_user_endpoint(
     :return: Created User object
     """
     try:
-        return create_user(db, user_data)
+        return create_users(db, user_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.post("/login", status_code=200)
-def login_user(
+def login_endpoint(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
-    Response: Response = None
+    response: Response = None
 ):
     """
     Endpoint to log in a user.
-    
+
     :param form_data: Form data containing username and password
     :param db: SQLAlchemy session object
     :return: Response with access token
     """
     try:
-        access_token = login_user(db, form_data.username, form_data.password)
-        Response.set_cookie(
+        access_token = login_users(db, form_data.username, form_data.password)
+        if response is None:
+            raise HTTPException(status_code=500, detail="Response object is required")
+        response.set_cookie(
             key="token",
             value=access_token,
             httponly=True,
