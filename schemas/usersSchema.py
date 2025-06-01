@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr, AfterValidator, field_validator
 class CreateUserRequest(BaseModel):
     full_name: str
     username: str
-    email: EmailStr
     password: str
     age: int
     @field_validator('age')
@@ -21,7 +20,6 @@ class CreateUserResponse(BaseModel):
     id: UUID
     full_name: str
     username: str
-    email: EmailStr
     age: int
 
     class Config:

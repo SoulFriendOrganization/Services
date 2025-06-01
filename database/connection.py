@@ -4,9 +4,9 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from os import getenv
 
-load_dotenv()
+load_dotenv(override=True)
 
-POSTGRESQL_URL = getenv("DATABASE_URL")
+POSTGRESQL_URL = getenv("POSTGRE_URL")
 
 engine = create_engine(POSTGRESQL_URL)
 
