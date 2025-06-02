@@ -1,7 +1,7 @@
 -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users Section
---- Users Table
+-- --sers Section
+-- --Users Table
 -- CREATE TABLE users (
 -- 	id UUID DEFAULT gen_random_uuid(),
 -- 	full_name varchar(255) NOT NULL,
@@ -23,8 +23,8 @@
 --     name TEXT NOT NULL
 -- );
 
--- -- Isi tabel mood dengan data emosi
--- INSERT INTO mood (id, name) VALUES
+-- -- Isi tabel moods dengan data emosi
+-- INSERT INTO moods (id, name) VALUES
 -- (6, 'Happiness'),
 -- (1, 'Sadness'),
 -- (2, 'Fear'),
@@ -46,7 +46,7 @@
 -- -- Tabel quizzes
 -- CREATE TABLE quizzes (
 --     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
--- 	generated_by_user_id UUID REFERENCES users(id),
+-- 		generated_by_user_id UUID REFERENCES users(id),
 --     title VARCHAR(255) NOT NULL,
 --     description TEXT,
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -67,7 +67,7 @@
 --     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
 --     quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE,
 --     attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
--- 	is_completed BOOLEAN,
+-- 		is_completed BOOLEAN,
 --     score INTEGER,
 --     points_earned INTEGER
 -- );
@@ -102,3 +102,19 @@
 -- 	score INT NOT NULL,
 -- 	point_earned INT NOT NULL
 -- )
+
+-- CREATE INDEX idx_daily_moods_user_id ON daily_moods(user_id);
+-- CREATE INDEX idx_daily_moods_date ON daily_moods(date);
+-- CREATE INDEX idx_daily_moods_user_id_date ON daily_moods(user_id, date);
+-- CREATE INDEX idx_quizzes_generated_by_user_id ON quizzes(generated_by_user_id);
+-- CREATE INDEX idx_questions_quiz_id ON questions(quiz_id);
+-- CREATE INDEX idx_quiz_attempts_user_id ON quiz_attempts(user_id);
+-- CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
+-- CREATE INDEX idx_quiz_attempts_user_id_quiz_id ON quiz_attempts(user_id, quiz_id);
+-- CREATE INDEX idx_quiz_attempts_attempted_at ON quiz_attempts(attempted_at);
+-- CREATE INDEX idx_attempt_answers_attempt_id ON attempt_answers(attempt_id);
+-- CREATE INDEX idx_attempt_answers_question_id ON attempt_answers(question_id);
+-- CREATE INDEX idx_daily_scores_user_id ON daily_scores(user_id);
+-- CREATE INDEX idx_daily_scores_date ON daily_scores(date);
+-- CREATE INDEX idx_user_preferences_user_id ON user_preferences(user_id);
+-- CREATE INDEX idx_user_collections_user_id ON user_collections(user_id);

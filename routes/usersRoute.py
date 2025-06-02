@@ -1,10 +1,10 @@
-from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schemas.usersSchema import CreateUserRequest, CreateUserResponse
 from controllers.usersController import create_users, login_users
 from fastapi.security import OAuth2PasswordRequestForm
+from logging_config import logger
 
 router = APIRouter()
 
@@ -22,6 +22,7 @@ def create_user_endpoint(
     :return: Created User object
     """
     try:
+        logger.info(f"Creating user with username: {user_data.username}")
         return create_users(db, user_data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -40,6 +41,7 @@ def login_endpoint(
     :return: Response with access token
     """
     try:
+        logger.info(f"User login attempt with username: {form_data.username}")
         access_token = login_users(db, form_data.username, form_data.password)
         if response is None:
             raise HTTPException(status_code=500, detail="Response object is required")
@@ -47,8 +49,8 @@ def login_endpoint(
             key="token",
             value=access_token,
             httponly=True,
-            secure=True,  # Set to True if using HTTPS
-            samesite="Lax"  # Adjust as needed
+            secure=True,  
+            samesite="Lax"  
         )
         return {"access_token": access_token, "token_type": "bearer"}
     except ValueError as e:

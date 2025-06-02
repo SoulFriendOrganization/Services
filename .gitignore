@@ -40,3 +40,5 @@ coverage.xml
 # Windows
 Thumbs.db
 ehthumbs.db
+*.log
+.env

@@ -15,7 +15,7 @@ class UserAuth(Base):
     username = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
 
-class Mood(Base):
+class Moods(Base):
     __tablename__ = "moods"
     id = Column(SmallInteger, primary_key=True)
     name = Column(String, nullable=False)
@@ -24,8 +24,8 @@ class DailyMood(Base):
     __tablename__ = "daily_moods"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'))
-    date = Column(Date, nullable=False)
-    mood_level = Column(SmallInteger, ForeignKey('mood.id'))
+    date = Column(Date, nullable=False, default=func.current_date)
+    mood_level = Column(SmallInteger, ForeignKey('moods.id'))
     notes = Column(String)
     created_at = Column(DateTime, default=func.now())
     __table_args__ = (UniqueConstraint('user_id', 'date'),)
