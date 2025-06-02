@@ -9,7 +9,7 @@ from controllers.chatController import chat, chat_trial
 router = APIRouter()
 
 # ****** Chat Endpoints ******
-@router.post("/chat", status_code=200, response_model=ChatResponse)
+@router.post("/", status_code=200, response_model=ChatResponse)
 def chat_endpoint(
     data: ChatRequest,
     user_id: str = Depends(get_user_id),
@@ -27,9 +27,9 @@ def chat_endpoint(
         logger.info(f"User ID: {user_id} - Processing chat request")
         return chat(db, user_id, data)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e), error=True)
+        raise HTTPException(status_code=400, detail=str(e))
     
-@router.post("/chat/trial", status_code=200, response_model=ChatResponse)
+@router.post("/trial", status_code=200, response_model=ChatResponse)
 def chat_trial_endpoint(
     data: ChatTrialRequest,
     db: Session = Depends(get_db)
@@ -44,5 +44,8 @@ def chat_trial_endpoint(
     try:
         logger.info("Processing chat trial request")
         return chat_trial(db, data)
+    except ProcessLookupError as e:
+        raise HTTPException(status_code=406, detail=str(e))
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e), error=True)
+        raise HTTPException(status_code=400, detail=str(e))
+    

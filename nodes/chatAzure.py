@@ -46,7 +46,7 @@ class ChatAzureMentalCare():
                 formatted_history.append(f"<im_start>{role.capitalize()}: {message}<im_end>")
         return "\n".join(formatted_history)
 
-    def chat(self, data: ChatAzureMentalCareRequest) -> str:
+    def chat(self, data: ChatAzureMentalCareRequest) -> ChatAzureMentalCareResponse:
         """
         Sends a chat request to the Azure mental care model and returns the response.
         
@@ -54,6 +54,7 @@ class ChatAzureMentalCare():
         :return: ChatAzureMentalCareResponse with the model's response
         """
         try:
+            data = data.model_dump()
             logger.info("Preparing to send chat request to Azure mental care model")
             formatted_history = self._formatted_history(data.get("message_history", [])) if data.get("message_history", None) else ""
             mental_care_prompt_template = """
@@ -84,8 +85,8 @@ class ChatAzureMentalCare():
                 "message": data.get("message", "")
             })
             logger.info("Received response from Azure mental care model")
-            result = response.model_dump().get("response", "")
-            return result
+            
+            return response
         except Exception as e:
             logger.error(f"Error in chat method: {str(e)}")
             return None

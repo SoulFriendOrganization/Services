@@ -1,12 +1,12 @@
-from nodes.chatAzure import chat_azure
+from nodes.chatAzure import chat_azure, ChatAzureMentalCareResponse
 from uuid import UUID
 from typing import List, Optional
 from database.models import User, DailyMood, Moods, func
-from schemas.chatSchemas import ChatRequest, ChatTrialRequest, ChatResponse
+from schemas.chatSchemas import ChatRequest, ChatTrialRequest
 from sqlalchemy.orm import Session
 from logging_config import logger
 
-def chat_trial(db: Session, data: ChatTrialRequest) -> str:
+def chat_trial(db: Session, data: ChatTrialRequest) -> ChatAzureMentalCareResponse:
     """
     Perform chat trial for a user based on the provided data.
     
@@ -19,7 +19,7 @@ def chat_trial(db: Session, data: ChatTrialRequest) -> str:
         logger.info(f"Sending chat trial request with message: {data.message[:50]}...")
         if len(data.message_history) > 3:
             logger.warning("Chat trial message history exceeds 3 messages, truncating to last 3")
-            raise ValueError("Chat trial message history exceeds 3 messages")
+            raise ProcessLookupError("Chat trial message history exceeds 3 messages")
         response = chat_azure.chat(data)
         
         if not response:
@@ -32,7 +32,7 @@ def chat_trial(db: Session, data: ChatTrialRequest) -> str:
         logger.exception(f"Error in chat_trial function: {str(e)}")
         raise ValueError("Chat trial failed due to an error") from e
 
-def chat(db: Session, user_id: UUID, data: ChatRequest) -> str:
+def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareResponse:
     """
     Perform chat for a user based on the provided data.
     
