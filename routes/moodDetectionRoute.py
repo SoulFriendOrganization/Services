@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from schemas.moodDetectionSchemas import FaceDetectionRequest
+from schemas.moodDetectionSchemas import FaceDetectionRequest, MoodInferenceResponse
 from controllers.moodDetectionController import mood_inference, mood_inference_trial
 from routes.middleware.auth import get_user_id
 from logging_config import logger
@@ -9,7 +9,7 @@ from logging_config import logger
 router = APIRouter()
 
 # ****** Face Detection Endpoints ******
-@router.post("/face-detection", status_code=200)
+@router.post("/face-detection", status_code=200, response_model=MoodInferenceResponse)
 def face_detection_endpoint(
     data: FaceDetectionRequest,
     user_id: str = Depends(get_user_id),
@@ -29,7 +29,7 @@ def face_detection_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     
-@router.post("/face-detection/trial", status_code=200)
+@router.post("/face-detection/trial", status_code=200, response_model=MoodInferenceResponse)
 def face_detection_trial_endpoint(
     data: FaceDetectionRequest,
     db: Session = Depends(get_db)
