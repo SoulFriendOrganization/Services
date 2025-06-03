@@ -10,6 +10,8 @@ load_dotenv()
 
 class ChatAzureMentalCareResponse(BaseModel):
     response: str = Field(description="Response from the Azure mental care chat model")
+    summary: Optional[str] = Field(description="Summary of the user problem or situation")
+    overall_condition: Optional[str] = Field(description="Overall condition of the user based on the chat and history of condition")
 
 class MessageHistoryItem(BaseModel):
     role: str = Field(description="Role of the message sender (e.g., 'user', 'assistant')")
@@ -20,6 +22,8 @@ class ChatAzureMentalCareRequest(TypedDict):
     current_mood: str
     message_history: Optional[list[dict]]
     message: str
+    notes: Optional[str] = None
+    user_condition_summary: Optional[str] = None
 
 
 class ChatAzureMentalCare():
@@ -63,6 +67,11 @@ class ChatAzureMentalCare():
 
             This is the user provided information:
             user_name: {user_name}
+
+            **for overall_condition and today condition might be empty**
+            overall_condition: {user_condition_summary}
+            Today Condition:
+            {notes}
             current_mood: {current_mood}
             Here is the message history:
             {message_history}
@@ -72,7 +81,7 @@ class ChatAzureMentalCare():
             NOTE: If the user asking for non-mental care related questions, please answer them in a concise manner that you are a mental care assistant and you can only answer mental care related questions.
             """
             mental_care_prompt = PromptTemplate(
-                input_variables=["user_name", "current_mood", "message_history", "message"],
+                input_variables=["user_name", "current_mood", "message_history", "message", "notes", "user_condition_summary"],
                 template=mental_care_prompt_template
             )
             mental_care = mental_care_prompt | self.llm.with_structured_output(ChatAzureMentalCareResponse)
@@ -81,7 +90,9 @@ class ChatAzureMentalCare():
                 "user_name": data.get("user_name", "User"),
                 "current_mood": data.get("current_mood", "neutral"),
                 "message_history": formatted_history,
-                "message": data.get("message", "")
+                "message": data.get("message", ""),
+                "notes": data.get("notes", ""),
+                "user_condition_summary": data.get("user_condition_summary", "")
             })
             logger.info("Received response from Azure mental care model")
             
@@ -91,5 +102,4 @@ class ChatAzureMentalCare():
             return None
         
     
-
 chat_azure = ChatAzureMentalCare()
