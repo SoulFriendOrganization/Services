@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import users_router, mood_detection_router, chat_router
+from routes import users_router, mood_detection_router, chat_router, quiz_router
 from pydantic import BaseModel
 import uvicorn
 
@@ -22,6 +22,7 @@ prefix = "/api/v1"
 app.include_router(router=users_router, prefix=f"{prefix}", tags=["auth"])
 app.include_router(router=mood_detection_router, prefix=f"{prefix}/mood", tags=["mood-detection"])
 app.include_router(router=chat_router, prefix=f"{prefix}/chat", tags=["chat"])
+app.include_router(router=quiz_router, prefix=f"{prefix}/quiz", tags=["quiz"])
 
 @app.get("/", response_model=HealthResponse)
 async def health():

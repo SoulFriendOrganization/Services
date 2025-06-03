@@ -1,6 +1,5 @@
 from langchain_openai import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 import os
 from dotenv import load_dotenv
 from typing import TypedDict, Optional

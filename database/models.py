@@ -43,6 +43,7 @@ class Question(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     quiz_id = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='CASCADE'))
     question_text = Column(String, nullable=False)
+    question_type = Column(String, nullable=False)  # e.g., 'multiple_choice', 'true_false'
     possible_answers = Column(JSONB, nullable=False)
     correct_answer = Column(JSONB, nullable=False)
 
@@ -52,7 +53,8 @@ class QuizAttempt(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'))
     quiz_id = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='CASCADE'))
     attempted_at = Column(DateTime, default=func.now())
-    is_completed = Column(Boolean)
+    expired_at = Column(DateTime, default=func.now() + func.interval('20 minutes'))
+    is_completed = Column(Boolean, default=False)
     score = Column(Integer)
     points_earned = Column(Integer)
 
@@ -76,11 +78,14 @@ class UserPreference(Base):
     __tablename__ = "user_preferences"
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
     user_preferences = Column(JSONB)
+    
 
 class UserCollection(Base):
     __tablename__ = "user_collections"
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
     score = Column(Integer, nullable=False)
     point_earned = Column(Integer, nullable=False)
+    user_condition_summary = Column(JSONB, nullable=False)
+    num_quiz_attempted = Column(Integer, default=0)
 
 Base.metadata.create_all(engine)

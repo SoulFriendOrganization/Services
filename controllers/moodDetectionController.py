@@ -38,7 +38,7 @@ def mood_inference(db: Session, user_id: UUID, data:FaceDetectionRequest) -> str
     }
 
     try:
-        logger.info(f"Sending data for mood inference: {data.model_dump()}")
+        logger.info(f"Sending data for mood inference for user {user_id}")
         response = requests.post(inference_url, json=data.model_dump(), headers=headers)
         response.raise_for_status()
         result = response.json()
@@ -81,7 +81,7 @@ def mood_inference_trial(db: Session, data: FaceDetectionRequest) -> str:
     }
 
     try:
-        logger.info(f"Sending data for mood inference trial: {data.model_dump()}")
+        logger.info(f"Sending data for mood inference trial")
         response = requests.post(inference_url, json=data.model_dump(), headers=headers)
         response.raise_for_status()
         result = response.json()

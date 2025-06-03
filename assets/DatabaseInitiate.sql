@@ -52,10 +52,15 @@
 --     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 -- );
 
+
+-- CREATE TYPE question_type AS ENUM ('multiple_choice', 'multiple_answer');
+
+
 -- -- Tabel questions
 -- CREATE TABLE questions (
 --     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 --     quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE,
+--     question_type question_type,
 --     question_text TEXT NOT NULL,
 --     possible_answers JSONB NOT NULL,
 --     correct_answer JSONB NOT NULL
@@ -67,6 +72,7 @@
 --     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
 --     quiz_id UUID REFERENCES quizzes(id) ON DELETE CASCADE,
 --     attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     expired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP + INTERVAL '20 Minutes',
 -- 		is_completed BOOLEAN,
 --     score INTEGER,
 --     points_earned INTEGER
@@ -99,8 +105,10 @@
 -- -- user collections
 -- CREATE TABLE user_collections (
 -- 	user_id UUID REFERENCES users(id) ON DELETE CASCADE,
--- 	score INT NOT NULL,
--- 	point_earned INT NOT NULL
+-- 	score INT ,
+-- 	point_earned INT ,
+--  user_condition_summary TEXT,
+--  num_quiz_attempt INT
 -- )
 
 -- CREATE INDEX idx_daily_moods_user_id ON daily_moods(user_id);

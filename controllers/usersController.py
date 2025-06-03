@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import List, Optional
-from database.models import User, UserAuth
+from database.models import User, UserAuth, func
 from sqlalchemy.orm import Session
 from schemas.usersSchema import CreateUserRequest, CreateUserResponse
 from utils.auth import get_password_hash, verify_password, create_access_token
@@ -67,3 +67,4 @@ def login_users(db: Session, username: str, password: str) -> str:
     except Exception as e:
         logger.error(f"Error during user login: {e}")
         raise ValueError("Login failed") from e
+    
