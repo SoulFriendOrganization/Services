@@ -17,8 +17,8 @@ def chat_trial(db: Session, data: ChatTrialRequest) -> ChatAzureMentalCareRespon
     """
     try:
         data = data.model_dump()
-        logger.info(f"Sending chat trial request with message: {data.message[:50]}...")
-        if len(data.message_history) > 7:
+        logger.info(f"Sending chat trial request with message: {data.get('message')}...")
+        if len(data.get('message_history')) > 7:
             logger.warning("Chat trial message history exceeds 3 messages, truncating to last 3")
             raise ProcessLookupError("Chat trial message history exceeds 3 messages")
         response = chat_azure.chat(data)
@@ -74,21 +74,22 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
             logger.error(f"Chat failed to get a response for user ID: {user_id}")
             raise ValueError("Chat failed to get a response")
         
-        db.query(DailyMood).update(
-            {DailyMood.notes: data.get('notes')},
-            synchronize_session=False
-        ).filter(
+        db.query(DailyMood).filter(
             DailyMood.user_id == user_id,
             DailyMood.date == func.current_date()
+        ).update(
+            {DailyMood.notes: data.get('notes')},
+            synchronize_session=False
         )
         db.commit()
         
-        db.query(UserCollection).update(
+        db.query(UserCollection).filter(
+            UserCollection.user_id == user_id
+        ).update(
             {UserCollection.user_condition_summary: response.summary},
             synchronize_session=False
-        ).filter(
-            UserCollection.user_id == user_id
         )
+        db.commit()
 
         logger.info(f"Chat successful for user ID: {user_id}")
         return response

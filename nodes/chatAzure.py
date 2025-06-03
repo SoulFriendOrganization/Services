@@ -10,8 +10,8 @@ load_dotenv()
 
 class ChatAzureMentalCareResponse(BaseModel):
     response: str = Field(description="Response from the Azure mental care chat model")
-    summary: Optional[str] = Field(description="Summary of the user problem or situation")
-    overall_condition: Optional[str] = Field(description="Overall condition of the user based on the chat and history of condition")
+    summary: Optional[str] = Field(description="Summary of the user problem or situation in short and concise manner")
+    overall_condition: Optional[str] = Field(description="Overall condition of the user based on the chat and history of condition make the summary short and concise")
 
 class MessageHistoryItem(BaseModel):
     role: str = Field(description="Role of the message sender (e.g., 'user', 'assistant')")
