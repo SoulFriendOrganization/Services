@@ -6,11 +6,8 @@ class MessageHistoryItem(BaseModel):
     message: str
 
 class ChatRequest(BaseModel):
-    user_id: str
     message: str
     message_history: Optional[List[MessageHistoryItem]]
-    user_name: Optional[str] = None
-    current_mood: Optional[str] = None
 
 class ChatTrialRequest(BaseModel):
     user_name: str

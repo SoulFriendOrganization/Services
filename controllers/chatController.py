@@ -17,7 +17,8 @@ def chat_trial(db: Session, data: ChatTrialRequest) -> ChatAzureMentalCareRespon
     """
     try:
         logger.info(f"Sending chat trial request with message: {data.message[:50]}...")
-        if len(data.message_history) > 3:
+        print(len(data.message_history))
+        if len(data.message_history) > 7:
             logger.warning("Chat trial message history exceeds 3 messages, truncating to last 3")
             raise ProcessLookupError("Chat trial message history exceeds 3 messages")
         response = chat_azure.chat(data)
@@ -42,6 +43,7 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
     :return: Chat result as a string
     """
     try:
+        data = data.model_dump()
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             logger.error(f"User not found with ID: {user_id}")
@@ -55,8 +57,8 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
             logger.error(f"Current mood not found for user ID: {user_id}")
             raise ValueError("Current mood not found for the user")
         
-        data.user_name = user.full_name
-        data.current_mood = current_mood.mood_level.name
+        data['user_name'] = user.full_name
+        data['current_mood'] = current_mood.mood_level.name
         
         logger.info(f"Sending chat request for user: {user_id} with mood: {data.current_mood}")
         response = chat_azure.chat(data)

@@ -54,7 +54,6 @@ class ChatAzureMentalCare():
         :return: ChatAzureMentalCareResponse with the model's response
         """
         try:
-            data = data.model_dump()
             logger.info("Preparing to send chat request to Azure mental care model")
             formatted_history = self._formatted_history(data.get("message_history", [])) if data.get("message_history", None) else ""
             mental_care_prompt_template = """
@@ -90,5 +89,7 @@ class ChatAzureMentalCare():
         except Exception as e:
             logger.error(f"Error in chat method: {str(e)}")
             return None
+        
+    
 
 chat_azure = ChatAzureMentalCare()
