@@ -300,7 +300,7 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
             
             # Add points if correct
             if is_correct:
-                score += 10
+                score += 1
                 point += 1
             
             # Add to evaluation details regardless of whether answer exists
@@ -312,24 +312,25 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
             "correct_answer": question.correct_answer,
             "is_correct": is_correct
             })
+        score_in_percentage = (score / len(questions)) * 100
         db.query(QuizAttempt).filter(
             QuizAttempt.id == quiz_attempt_id
         ).update(
-            {QuizAttempt.is_completed: True, QuizAttempt.score: score, QuizAttempt.points_earned: point},
+            {QuizAttempt.is_completed: True, QuizAttempt.score: score_in_percentage, QuizAttempt.points_earned: point},
             synchronize_session=False
         )
         user_collection = db.query(UserCollection).filter(
             UserCollection.user_id == user_id
         ).first()
         if user_collection:
-            user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempt + 1)
+            user_collection.score = int((user_collection.score + score_in_percentage) / (user_collection.num_quiz_attempt + 1))
             user_collection.point_earned += point
             user_collection.num_quiz_attempt += 1
             db.commit()
         else:
             user_collection = UserCollection(
                 user_id=user_id,
-                score=(score / 1),
+                score=(score_in_percentage / 1),
                 point_earned=point,
                 num_quiz_attempt=1
             )
@@ -339,7 +340,7 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
         
         evaluation_response = QuizEvaluationResponse(
             quiz_attempt_id=quiz_attempt.id,
-            score=score,
+            score=score_in_percentage,
             points_earned=point,
             evaluation_details=evaluation_details
         )
@@ -401,12 +402,13 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
                 
                 # Add points if correct
                 if is_correct:
-                    score += 10
+                    score += 1
                     point += 1
+            score_in_percentage = (score / len(questions)) * 100 if questions else 0
             db.query(QuizAttempt).filter(
                 QuizAttempt.id == quiz_attempt.id
             ).update(
-                {QuizAttempt.is_completed: True, QuizAttempt.score: score, QuizAttempt.points_earned: point},
+                {QuizAttempt.is_completed: True, QuizAttempt.score: score_in_percentage, QuizAttempt.points_earned: point},
                 synchronize_session=False
             )
             db.commit()
@@ -414,14 +416,14 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
             UserCollection.user_id == user_id
             ).first()
             if user_collection:
-                user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempt + 1)
+                user_collection.score = int((user_collection.score + score_in_percentage) / (user_collection.num_quiz_attempt + 1))
                 user_collection.point_earned += point
                 user_collection.num_quiz_attempt += 1
                 db.commit()
             else:
                 user_collection = UserCollection(
                     user_id=user_id,
-                    score=(score / 1),
+                    score=(score_in_percentage / 1),
                     point_earned=point,
                     num_quiz_attempt=1
                 )
