@@ -20,7 +20,7 @@ class PossibleAnswers(BaseModel):
 class QuestionAttemptResponse(BaseModel):
     question_id: UUID
     question_text: str
-    possible_answers: list[PossibleAnswers]
+    possible_answers: PossibleAnswers
     question_type: Literal["multiple_choice", "multiple_answer"]
 
 class QuizAttemptResponse(BaseModel):
@@ -29,8 +29,8 @@ class QuizAttemptResponse(BaseModel):
     questions: list[QuestionAttemptResponse]
 
 class UserAnswer(BaseModel):
-    attempt_answer_id: UUID = Field(description="ID of the attempt answer")
-    user_answer: List[Optional[Literal["A", "B", "C", "D"]]] = Field(description="User's answer to the question")
+    attempt_answer_id: Optional[UUID] = Field(description="ID of the attempt answer")
+    user_answer: Optional[List[Literal["A", "B", "C", "D"]]] = Field(description="User's answer to the question")
 
 class EvaluationQuestionDetail(BaseModel):
     question_id: UUID

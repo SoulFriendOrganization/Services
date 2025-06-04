@@ -216,7 +216,7 @@ def get_answer_by_quiz_attempt_question_id(db: Session, quiz_attempt_id: UUID, q
         
         if not answers:
             logger.error(f"No answers found for question {question_id} in quiz attempt {quiz_attempt_id}")
-            return []
+            raise ValueError("No answers found for the specified question in the quiz attempt")
         response = {"attempt_answer_id": answers.id ,"user_answer": answers.user_answer}
         logger.info(f"Answers retrieved successfully for question {question_id} in quiz attempt {quiz_attempt_id} by user {user_id}")
         return response
@@ -241,7 +241,7 @@ def get_answer_by_answer_id(db: Session, answer_id: UUID, user_id: UUID) -> User
         
         if not answer:
             logger.error(f"Answer with ID {answer_id} not found for user {user_id}")
-            return None
+            raise ValueError("Answer not found for the specified ID")
         response = {
             "attempt_answer_id": answer_id,
             "user_answer": answer.user_answer

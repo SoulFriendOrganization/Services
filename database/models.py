@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, SmallInteger, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import Column, String, Integer, SmallInteger, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
 from database.connection import Base, engine
@@ -53,7 +53,7 @@ class QuizAttempt(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'))
     quiz_id = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='CASCADE'))
     attempted_at = Column(DateTime, default=func.now())
-    expired_at = Column(DateTime, default=func.now() + func.interval('20 minutes'))
+    expired_at = Column(DateTime, server_default=func.now() + text("interval '20 minutes'"))
     is_completed = Column(Boolean, default=False)
     score = Column(Integer)
     points_earned = Column(Integer)
