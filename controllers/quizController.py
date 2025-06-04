@@ -315,17 +315,17 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
         ).all()
 
         for question in questions:
-            answer = next((a for a in answers if a.question_id == question.id), [])
+            answer = next((a for a in answers if a.question_id == question.id), None)
             is_correct = False
-            if answer:
+            if answer is not None:
                 is_correct = set(answer.user_answer) == set(question.correct_answer)
-            # Update the answer record
-            db.query(AttemptAnswer).filter(
-                AttemptAnswer.id == answer.id
-            ).update(
-                {AttemptAnswer.is_correct: is_correct},
-                synchronize_session=False
-            )
+                # Update the answer record
+                db.query(AttemptAnswer).filter(
+                    AttemptAnswer.id == answer.id
+                ).update(
+                    {AttemptAnswer.is_correct: is_correct},
+                    synchronize_session=False
+                )
             
             # Add points if correct
             if is_correct:
@@ -409,17 +409,17 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
             point = 0
 
             for question in questions:
-                answer = next((a for a in answers if a.question_id == question.id), [])
+                answer = next((a for a in answers if a.question_id == question.id), None)
                 is_correct = False
-                if answer:
+                if answer is not None:
                     is_correct = set(answer.user_answer) == set(question.correct_answer)
-                # Update the answer record
-                db.query(AttemptAnswer).filter(
-                    AttemptAnswer.id == answer.id
-                ).update(
-                    {AttemptAnswer.is_correct: is_correct},
-                    synchronize_session=False
-                )
+                    # Update the answer record
+                    db.query(AttemptAnswer).filter(
+                        AttemptAnswer.id == answer.id
+                    ).update(
+                        {AttemptAnswer.is_correct: is_correct},
+                        synchronize_session=False
+                    )
                 
                 # Add points if correct
                 if is_correct:
