@@ -27,6 +27,8 @@ class QuizAttemptResponse(BaseModel):
     quiz_attempt_id: UUID
     quiz_id: UUID
     questions: list[QuestionAttemptResponse]
+    expired_at: Optional[str] = Field(
+        description="Expiration time of the quiz attempt in ISO format")
 
 class UserAnswer(BaseModel):
     attempt_answer_id: Optional[UUID] = Field(description="ID of the attempt answer")
@@ -55,3 +57,8 @@ class AttemptQuizAnswerResponse(BaseModel):
 
 class AttemptQuizAnswerRequest(BaseModel):
     user_answers: Optional[List[Literal["A", "B", "C", "D"]]]
+
+class CheckQuizAttemptQuestion(BaseModel):
+    questions: list[QuestionAttemptResponse]
+    expired_at: Optional[str] = Field(
+        description="Expiration time of the quiz attempt in ISO format")

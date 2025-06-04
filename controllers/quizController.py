@@ -95,7 +95,8 @@ def attempt_quiz(db: Session, quiz_id: UUID, user_id: UUID) -> QuizAttemptRespon
                 "question_text": question.question_text,
                 "possible_answers": question.possible_answers,
                 "question_type": question.question_type
-            } for question in questions]
+            } for question in questions],
+            expired_at=quiz_attempt.expired_at.strftime("%Y-%m-%d %H:%M:%S")
         )
         return response
     except Exception as e:
@@ -130,7 +131,7 @@ def get_quiz_attempt_id(db: Session, user_id: UUID) -> AttemptIdResponse:
         logger.error(f"Error retrieving quiz attempt ID: {e}")
         raise ValueError("Failed to retrieve quiz attempt ID") from e
     
-def get_quiz_questions(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> List[QuestionAttemptResponse]:
+def get_quiz_questions(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> CheckQuizAttemptQuestion:
     """
     Retrieve questions for a quiz attempt.
     
@@ -151,13 +152,16 @@ def get_quiz_questions(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> Lis
             logger.error(f"No questions found for quiz attempt {quiz_attempt_id}")
             raise ValueError("No questions found for the quiz attempt")
         
-        response = [QuestionAttemptResponse(
-            question_id=question.id,
-            question_text=question.question_text,
-            possible_answers=question.possible_answers,
-            question_type=question.question_type
-        ) for question in questions]
-        
+        response = CheckQuizAttemptQuestion(
+            questions=[{
+                "question_id": question.id,
+                "question_text": question.question_text,
+                "possible_answers": question.possible_answers,
+                "question_type": question.question_type
+            } for question in questions],
+            expired_at=quiz_attempt.expired_at.strftime("%Y-%m-%d %H:%M:%S")
+        )
+        print(response)
         logger.info(f"Questions retrieved successfully for quiz attempt {quiz_attempt_id} by user {user_id}")
         return response
     except Exception as e:

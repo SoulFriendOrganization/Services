@@ -63,7 +63,7 @@ def get_quiz_attempts_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     
-@router.get("/attempt/{quiz_attempt_id}", status_code=200, response_model=List[QuestionAttemptResponse])
+@router.get("/attempt/{quiz_attempt_id}", status_code=200, response_model=CheckQuizAttemptQuestion)
 def get_quiz_attempt_details_endpoint(
     quiz_attempt_id: str,
     user_id: str = Depends(get_user_id),
