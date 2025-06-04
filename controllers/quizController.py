@@ -180,6 +180,9 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
         if not question:
             logger.error(f"Question {question_id} not found for quiz attempt {quiz_attempt_id}")
             raise ValueError("Question not found for the quiz attempt")
+        if question.question_type == "multiple_choice" and len(answers) != 1:
+            logger.error(f"Invalid number of answers for question {question_id} in quiz attempt {quiz_attempt_id}")
+            raise ValueError("Invalid number of answers for the question")
         answer = AttemptAnswer(
             quiz_attempt_id=quiz_attempt_id,
             question_id=question_id,

@@ -82,9 +82,10 @@ def get_quiz_attempt_details_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     
-@router.put("/submit/{quiz_attempt_id}", status_code=200, response_model=AttemptQuizAnswerResponse)
+@router.put("/submit/{quiz_attempt_id}/{question_id}", status_code=200, response_model=AttemptQuizAnswerResponse)
 def submit_quiz_attempt_endpoint(
-    quiz_attempt_id: str,
+    quiz_attempt_id: UUID,
+    question_id: UUID,
     user_answers: AttemptQuizAnswerRequest,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db)
@@ -99,7 +100,7 @@ def submit_quiz_attempt_endpoint(
     :return: Evaluation response of the quiz attempt
     """
     try:
-        return attempt_quiz_answer(db, quiz_attempt_id, user_id, user_answers)
+        return attempt_quiz_answer(db, quiz_attempt_id, user_id,question_id, user_answers)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     
