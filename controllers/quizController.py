@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from logging_config import logger
 from schemas.quizSchemas import *
 from nodes.quizAiAgent import quiz_agent
+from os import getenv
 
 def generate_quiz(db: Session, quiz_data: QuizGeneratedRequest, user_id: UUID):
     """
@@ -25,7 +26,11 @@ def generate_quiz(db: Session, quiz_data: QuizGeneratedRequest, user_id: UUID):
             ).first()
         else:
             user_condition_summary = None
-        quiz_generated = quiz_agent.generate_quiz(quiz_data.get("theme"), quiz_data.get("difficulty"), user_condition_summary)
+        quiz_generated = quiz_agent.generate_quiz(quiz_data.get("theme"),
+                                                   quiz_data.get("difficulty"),
+                                                    user_condition_summary,
+                                                    total_questions= 5 if getenv("PRODUCTION") 
+                                                                    else 2)
         if not quiz_generated:
             logger.error("Quiz generation failed, no data returned from AI agent")
             raise ValueError("Quiz generation failed, no data returned from AI agent")
