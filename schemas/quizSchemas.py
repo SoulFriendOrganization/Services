@@ -7,7 +7,7 @@ class QuizGeneratedRequest(BaseModel):
     difficulty: Literal["easy", "medium", "hard"] 
     
 class QuizGeneratedResponse(BaseModel):
-    quiz_id: str
+    quiz_id: UUID
     title: str
     description: str
 
