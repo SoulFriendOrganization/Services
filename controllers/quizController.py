@@ -192,12 +192,25 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
         if question.question_type == "multiple_choice" and len(answers.user_answers) > 1:
             logger.error(f"Invalid number of answers for question {question_id} in quiz attempt {quiz_attempt_id}")
             raise ValueError("Invalid number of answers for the question")
-        answer = AttemptAnswer(
-            attempt_id=quiz_attempt_id,
-            question_id=question_id,
-            user_answer=answers.model_dump().get("user_answers", []),
-        )
-        db.add(answer)
+        check_answer = db.query(AttemptAnswer).filter(
+            AttemptAnswer.attempt_id == quiz_attempt_id,
+            AttemptAnswer.question_id == question_id
+        ).first()
+        if check_answer:
+            db.query(AttemptAnswer).filter(
+            AttemptAnswer.id == check_answer.id
+            ).update(
+                {AttemptAnswer.user_answer: answers.model_dump().get("user_answers", [])},
+                synchronize_session=False
+            )
+        else:
+            logger.info(f"Creating new answer record for question {question_id} in quiz attempt {quiz_attempt_id}")
+            answer = AttemptAnswer(
+                attempt_id=quiz_attempt_id,
+                question_id=question_id,
+                user_answer=answers.model_dump().get("user_answers", []),
+            )
+            db.add(answer)
         db.commit()
         db.refresh(answer)
         logger.info(f"Answers submitted successfully for quiz attempt {quiz_attempt_id} by user {user_id}")
