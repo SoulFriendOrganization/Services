@@ -275,26 +275,38 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
         score = 0
         point = 0
         evaluation_details = []
-        for answer in answers:
-            question = db.query(Question).filter(Question.id == answer.question_id).first()
-            is_correct = set(answer.user_answer) == set(question.correct_answer)
-            evaluation_details.append({
-                "question_id": question.id,
-                "question_text": question.question_text,
-                "possible_answers": question.possible_answers,
-                "user_answer": answer.user_answer,
-                "correct_answer": question.correct_answer,
-                "is_correct": is_correct
-            })
-            if is_correct:
-                score += 10
-                point += 1
+
+        questions = db.query(Question).filter(
+            Question.quiz_id == quiz_attempt.quiz_id
+        ).all()
+
+        for question in questions:
+            answer = next((a for a in answers if a.question_id == question.id), [])
+            is_correct = False
+            if answer:
+                is_correct = set(answer.user_answer) == set(question.correct_answer)
+            # Update the answer record
             db.query(AttemptAnswer).filter(
                 AttemptAnswer.id == answer.id
             ).update(
-                {AttemptAnswer.is_correct: set(answer.user_answer) == set(question.correct_answer)},
+                {AttemptAnswer.is_correct: is_correct},
                 synchronize_session=False
             )
+            
+            # Add points if correct
+            if is_correct:
+                score += 10
+                point += 1
+            
+            # Add to evaluation details regardless of whether answer exists
+            evaluation_details.append({
+            "question_id": question.id,
+            "question_text": question.question_text,
+            "possible_answers": question.possible_answers,
+            "user_answer": answer.user_answer if answer else [],
+            "correct_answer": question.correct_answer,
+            "is_correct": is_correct
+            })
         db.query(QuizAttempt).filter(
             QuizAttempt.id == quiz_attempt_id
         ).update(
@@ -305,7 +317,7 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
             UserCollection.user_id == user_id
         ).first()
         if user_collection:
-            user_collection.score += (score / (user_collection.num_quiz_attempted + 1))
+            user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempted + 1)
             user_collection.point_earned += point
             user_collection.num_quiz_attempted += 1
             db.commit()
@@ -335,19 +347,83 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
 
 
 
-def update_quiz_abandoned(db: Session, quiz_ids: List[UUID], user_id: UUID) -> None:
+def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
     """
-    Update the quiz attempt status to 'abandoned' for a given quiz and user.
+    Update the quiz attempt that abandoned from user for a given quiz and user.
     
     :param db: SQLAlchemy session object
     :param quiz_id: ID of the quiz
     :param user_id: ID of the user
     """
     try:
-        for quiz_id in quiz_ids:
+        check_abandoned_quiz = db\
+            .query(QuizAttempt)\
+                .filter(QuizAttempt.user_id == user_id, 
+                        QuizAttempt.is_completed == False,
+                        QuizAttempt.expired_at < func.now())\
+                            .all()
+        if not check_abandoned_quiz:
+            logger.info(f"No abandoned quiz attempts found for user {user_id}")
+            return
+        
+        for quiz_id in check_abandoned_quiz:
             logger.info(f"Updating quiz {quiz_id} for user {user_id} to abandoned status")
-            
+            quiz_attempt = db.query(QuizAttempt).filter(
+                QuizAttempt.id == quiz_id,
+                QuizAttempt.user_id == user_id,
+                QuizAttempt.is_completed == False
+            ).first()
+            questions = db.query(Question).filter(Question.quiz_id == quiz_attempt.quiz_id).all()
+            answers = db.query(AttemptAnswer).filter(
+                AttemptAnswer.attempt_id == quiz_attempt.id
+            ).all()
+
+            score = 0
+            point = 0
+
+            for question in questions:
+                answer = next((a for a in answers if a.question_id == question.id), [])
+                is_correct = False
+                if answer:
+                    is_correct = set(answer.user_answer) == set(question.correct_answer)
+                # Update the answer record
+                db.query(AttemptAnswer).filter(
+                    AttemptAnswer.id == answer.id
+                ).update(
+                    {AttemptAnswer.is_correct: is_correct},
+                    synchronize_session=False
+                )
+                
+                # Add points if correct
+                if is_correct:
+                    score += 10
+                    point += 1
+            db.query(QuizAttempt).filter(
+                QuizAttempt.id == quiz_attempt.id
+            ).update(
+                {QuizAttempt.is_completed: True, QuizAttempt.score: score, QuizAttempt.points_earned: point},
+                synchronize_session=False
+            )
+            db.commit()
+            user_collection = db.query(UserCollection).filter(
+            UserCollection.user_id == user_id
+            ).first()
+            if user_collection:
+                user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempted + 1)
+                user_collection.point_earned += point
+                user_collection.num_quiz_attempted += 1
+                db.commit()
+            else:
+                user_collection = UserCollection(
+                    user_id=user_id,
+                    score=(score / 1),
+                    point_earned=point,
+                    num_quiz_attempted=1
+                )
+                db.add(user_collection)
+                db.commit()
             logger.info(f"Quiz {quiz_id} for user {user_id} updated to abandoned status successfully")
+            return
     except Exception as e:
         logger.error(f"Error updating quiz attempt: {e}")
         raise ValueError("Failed to update quiz attempt") from e

@@ -1,10 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from schemas.usersSchema import CreateUserRequest, CreateUserResponse
+from schemas.usersSchema import CreateUserRequest, CreateUserResponse, FetchedInfoResponse, MonthlyMood
 from controllers.usersController import create_users, login_users
+from controllers.quizController import update_quiz_abandoned
 from fastapi.security import OAuth2PasswordRequestForm
 from logging_config import logger
+from routes.middleware.auth import get_user_id
+from database.models import User, func, DailyMood, UserCollection, Moods
+import threading
 
 router = APIRouter()
 
@@ -55,3 +59,75 @@ def login_endpoint(
         return {"access_token": access_token, "token_type": "bearer"}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+
+@router.get("/logout", status_code=200)
+def logout_endpoint(response: Response):
+    """
+    Endpoint to log out a user by clearing the access token cookie.
+
+    :param response: Response object to clear the cookie
+    :return: Success message
+    """
+    try:
+        logger.info("User logged out successfully")
+        response.delete_cookie(key="token")
+        return {"message": "Logged out successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/fetch_stat", status_code=200, response_model=FetchedInfoResponse)
+def fetch_user_info_endpoint(
+    user_id: str = Depends(get_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint to fetch user information and update quiz abandonment status.
+    :param user_id: ID of the user making the request
+    :param db: SQLAlchemy session object
+    :return: User information including full name, age, and mood statistics
+    """
+    try:
+        logger.info(f"Fetching user info for user ID: {user_id}")
+        user_info = db.query(User).filter(User.id == user_id).first()
+        thread = threading.Thread(
+            target=update_quiz_abandoned, 
+            args=(db, user_id)
+        )
+        thread.start()
+        today_mood = db.query(
+            Moods.name
+        ).join(
+            DailyMood, 
+            Moods.id == DailyMood.mood_level
+        ).filter(
+            DailyMood.user_id == user_id,
+            DailyMood.date == func.current_date()
+        ).first()
+        monthly_mood = db.query(
+            Moods.name,
+            func.count(DailyMood.mood_level).label('mood_count')
+        ).join(
+            DailyMood, 
+            Moods.id == DailyMood.mood_level
+        ).filter(
+            DailyMood.user_id == user_id,
+            DailyMood.date >= func.date_trunc('month', func.current_date())
+        ).group_by(Moods.name).all()
+        monthly_mood_dict = {mood.name: mood.mood_count for mood in monthly_mood}
+        score_and_points = db.query(
+            UserCollection.score, 
+            UserCollection.point_earned
+        ).filter(UserCollection.user_id == user_id).first()
+        if not user_info:
+            raise HTTPException(status_code=404, detail="User not found")
+        return FetchedInfoResponse(
+            full_name=user_info.full_name,
+            age=user_info.age,
+            today_mood=today_mood[0] if today_mood else None,
+            monthly_mood=MonthlyMood(**monthly_mood_dict),
+            score=score_and_points.score if score_and_points else 0,
+            point_earned=score_and_points.point_earned if score_and_points else 0
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        

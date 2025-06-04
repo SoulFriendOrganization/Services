@@ -1,4 +1,4 @@
-from typing import Optional, List, TypedDict, Annotated
+from typing import Optional, List, TypedDict, Annotated, Dict, Literal
 from uuid import UUID
 from pydantic import BaseModel, EmailStr, AfterValidator, field_validator
 
@@ -21,6 +21,27 @@ class CreateUserResponse(BaseModel):
     full_name: str
     username: str
     age: int
+
+    class Config:
+        orm_mode = True
+
+class MonthlyMood(BaseModel):
+    Happy: int = 0
+    Surprise: int = 0
+    Sad: int = 0
+    Anger: int = 0
+    Disgust: int = 0
+    Fear: int = 0
+    Neutral: int = 0
+
+
+class FetchedInfoResponse(BaseModel):
+    full_name: str
+    age: int
+    today_mood: Optional[Literal['happy', 'surprise', 'sad', 'anger', 'disgust', 'fear', 'neutral']]
+    monthly_mood: MonthlyMood
+    score: Optional[int] = 0
+    point_earned: Optional[int] = 0
 
     class Config:
         orm_mode = True
