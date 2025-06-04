@@ -54,4 +54,4 @@ class AttemptQuizAnswerResponse(BaseModel):
     attempt_answer_id: UUID
 
 class AttemptQuizAnswerRequest(BaseModel):
-    user_answers: List[Optional[Literal["A", "B", "C", "D"]]]
+    user_answers: Optional[List[Literal["A", "B", "C", "D"]]]

@@ -63,8 +63,8 @@ class AttemptAnswer(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     attempt_id = Column(UUID(as_uuid=True), ForeignKey('quiz_attempts.id', ondelete='CASCADE'))
     question_id = Column(UUID(as_uuid=True), ForeignKey('questions.id', ondelete='CASCADE'))
-    user_answer = Column(JSONB, nullable=False)
-    is_correct = Column(Boolean, nullable=False)
+    user_answer = Column(JSONB)
+    is_correct = Column(Boolean)
 
 class DailyScore(Base):
     __tablename__ = "daily_scores"
