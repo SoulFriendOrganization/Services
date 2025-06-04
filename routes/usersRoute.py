@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from schemas.usersSchema import CreateUserRequest, CreateUserResponse, FetchedInfoResponse, MonthlyMood
@@ -79,7 +79,7 @@ def logout_endpoint(response: Response):
 def fetch_user_info_endpoint(
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
-    response: Response = None
+    Request: Request = None
 ):
     """
     Endpoint to fetch user information and update quiz abandonment status.
@@ -103,10 +103,11 @@ def fetch_user_info_endpoint(
         ).first()
         if quiz_attempt:
             logger.warning(f"User has an active quiz attempt that is not completed.")
+            origin_url = Request.headers.get("Origin")
             raise HTTPException(
             status_code=307,
             detail="You have an active quiz attempt that is not completed.",
-            headers={"Location": f"/quiz/{quiz_attempt.id}"}
+            headers={"Location": f"{origin_url}/quiz/{quiz_attempt.id}"}
             )
         today_mood = db.query(
             Moods.name
