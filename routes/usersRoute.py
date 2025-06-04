@@ -103,8 +103,11 @@ def fetch_user_info_endpoint(
         ).first()
         if quiz_attempt:
             logger.warning(f"User has an active quiz attempt that is not completed.")
-            response.headers["Location"] = f"/quiz/{quiz_attempt.id}"
-            raise HTTPException(status_code=307, detail="You have an active quiz attempt that is not completed.", headers=response.headers)
+            raise HTTPException(
+            status_code=307,
+            detail="You have an active quiz attempt that is not completed.",
+            headers={"Location": f"/quiz/{quiz_attempt.id}"}
+            )
         today_mood = db.query(
             Moods.name
         ).join(

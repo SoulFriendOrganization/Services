@@ -397,17 +397,9 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
                         QuizAttempt.is_completed == False,
                         QuizAttempt.expired_at < func.now())\
                             .all()
-        if not check_abandoned_quiz:
-            logger.info(f"No abandoned quiz attempts found for user {user_id}")
-            return
         
-        for quiz_id in check_abandoned_quiz:
-            logger.info(f"Updating quiz {quiz_id} for user {user_id} to abandoned status")
-            quiz_attempt = db.query(QuizAttempt).filter(
-                QuizAttempt.quiz_id == quiz_id,
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.is_completed == False
-            ).first()
+        for quiz_attempt in check_abandoned_quiz:
+            logger.info(f"Updating quiz {quiz_attempt.id} for user {user_id} to abandoned status")
             questions = db.query(Question).filter(Question.quiz_id == quiz_attempt.quiz_id).all()
             answers = db.query(AttemptAnswer).filter(
                 AttemptAnswer.attempt_id == quiz_attempt.id
@@ -458,7 +450,7 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
                 )
                 db.add(user_collection)
                 db.commit()
-            logger.info(f"Quiz {quiz_id} for user {user_id} updated to abandoned status successfully")
+            logger.info(f"Quiz {quiz_attempt.id} for user {user_id} updated to abandoned status successfully")
             return
     except Exception as e:
         logger.error(f"Error updating quiz attempt: {e}")
