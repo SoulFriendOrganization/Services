@@ -216,7 +216,7 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
         logger.info(f"Answers submitted successfully for quiz attempt {quiz_attempt_id} by user {user_id}")
         response = AttemptQuizAnswerResponse(
             message="Answers submitted successfully",
-            attempt_answer_id=answer.id if check_answer is None else check_answer.id
+            attempt_answer_id=check_answer.id if check_answer else answer.id
         )
         return response
     except Exception as e:
