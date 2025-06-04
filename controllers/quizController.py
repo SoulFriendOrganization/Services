@@ -404,7 +404,7 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
         for quiz_id in check_abandoned_quiz:
             logger.info(f"Updating quiz {quiz_id} for user {user_id} to abandoned status")
             quiz_attempt = db.query(QuizAttempt).filter(
-                QuizAttempt.id == quiz_id,
+                QuizAttempt.quiz_id == quiz_id,
                 QuizAttempt.user_id == user_id,
                 QuizAttempt.is_completed == False
             ).first()

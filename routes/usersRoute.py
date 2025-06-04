@@ -102,9 +102,9 @@ def fetch_user_info_endpoint(
             QuizAttempt.is_completed == False
         ).first()
         if quiz_attempt:
-            logger.warning(f"User {user_id} has an active quiz attempt that is not completed.")
+            logger.warning(f"User has an active quiz attempt that is not completed.")
             response.headers["Location"] = f"/quiz/{quiz_attempt.id}"
-            raise HTTPException(status_code=307, detail="You have an active quiz attempt that is not completed.")
+            raise HTTPException(status_code=307, detail="You have an active quiz attempt that is not completed.", headers=response.headers)
         today_mood = db.query(
             Moods.name
         ).join(
@@ -129,8 +129,6 @@ def fetch_user_info_endpoint(
             UserCollection.score, 
             UserCollection.point_earned
         ).filter(UserCollection.user_id == user_id).first()
-        if not user_info:
-            raise HTTPException(status_code=404, detail="User not found")
         return FetchedInfoResponse(
             full_name=user_info.full_name,
             age=user_info.age,
@@ -139,6 +137,8 @@ def fetch_user_info_endpoint(
             score=score_and_points.score if score_and_points else 0,
             point_earned=score_and_points.point_earned if score_and_points else 0
         )
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
         
