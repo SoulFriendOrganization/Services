@@ -317,16 +317,16 @@ def evaluate_quiz(db: Session, quiz_attempt_id: UUID, user_id: UUID) -> QuizEval
             UserCollection.user_id == user_id
         ).first()
         if user_collection:
-            user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempted + 1)
+            user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempt + 1)
             user_collection.point_earned += point
-            user_collection.num_quiz_attempted += 1
+            user_collection.num_quiz_attempt += 1
             db.commit()
         else:
             user_collection = UserCollection(
                 user_id=user_id,
                 score=(score / 1),
                 point_earned=point,
-                num_quiz_attempted=1
+                num_quiz_attempt=1
             )
             db.add(user_collection)
             db.commit()
@@ -409,16 +409,16 @@ def update_quiz_abandoned(db: Session, user_id: UUID) -> None:
             UserCollection.user_id == user_id
             ).first()
             if user_collection:
-                user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempted + 1)
+                user_collection.score = (user_collection.score + score) / (user_collection.num_quiz_attempt + 1)
                 user_collection.point_earned += point
-                user_collection.num_quiz_attempted += 1
+                user_collection.num_quiz_attempt += 1
                 db.commit()
             else:
                 user_collection = UserCollection(
                     user_id=user_id,
                     score=(score / 1),
                     point_earned=point,
-                    num_quiz_attempted=1
+                    num_quiz_attempt=1
                 )
                 db.add(user_collection)
                 db.commit()

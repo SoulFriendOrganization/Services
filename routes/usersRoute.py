@@ -7,7 +7,7 @@ from controllers.quizController import update_quiz_abandoned
 from fastapi.security import OAuth2PasswordRequestForm
 from logging_config import logger
 from routes.middleware.auth import get_user_id
-from database.models import User, func, DailyMood, UserCollection, Moods
+from database.models import User, func, DailyMood, UserCollection, Moods, QuizAttempt
 import threading
 
 router = APIRouter()
@@ -78,7 +78,8 @@ def logout_endpoint(response: Response):
 @router.get("/fetch_stat", status_code=200, response_model=FetchedInfoResponse)
 def fetch_user_info_endpoint(
     user_id: str = Depends(get_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    response: Response = None
 ):
     """
     Endpoint to fetch user information and update quiz abandonment status.
@@ -94,6 +95,16 @@ def fetch_user_info_endpoint(
             args=(db, user_id)
         )
         thread.start()
+        # Cek if the user still has active quiz attempts
+        quiz_attempt = db.query(QuizAttempt).filter(
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.expired_at < func.now(),
+            QuizAttempt.is_completed == False
+        ).first()
+        if quiz_attempt:
+            logger.warning(f"User {user_id} has an active quiz attempt that is not completed.")
+            response.headers["Location"] = f"/quiz/{quiz_attempt.id}"
+            raise HTTPException(status_code=307, detail="You have an active quiz attempt that is not completed.")
         today_mood = db.query(
             Moods.name
         ).join(

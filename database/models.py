@@ -86,6 +86,6 @@ class UserCollection(Base):
     score = Column(Integer, nullable=False)
     point_earned = Column(Integer, nullable=False)
     user_condition_summary = Column(JSONB, nullable=False)
-    num_quiz_attempted = Column(Integer, default=0)
+    num_quiz_attempt = Column(Integer, default=0)
 
 Base.metadata.create_all(engine)
