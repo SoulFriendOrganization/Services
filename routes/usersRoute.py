@@ -79,7 +79,8 @@ def logout_endpoint(response: Response):
 def fetch_user_info_endpoint(
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db),
-    Request: Request = None
+    Request: Request = None,
+    response: Response = None
 ):
     """
     Endpoint to fetch user information and update quiz abandonment status.
@@ -104,10 +105,14 @@ def fetch_user_info_endpoint(
         if quiz_attempt:
             logger.warning(f"User has an active quiz attempt that is not completed.")
             origin_url = Request.headers.get("Origin")
+            response.body = {
+                "message": "You have an active quiz attempt that is not completed.",
+                "redirect_url": f"{origin_url}/quiz"
+            }
             raise HTTPException(
             status_code=307,
             detail="You have an active quiz attempt that is not completed.",
-            headers={"Location": f"{origin_url}/quiz/{quiz_attempt.id}"}
+            headers={"Location": f"{origin_url}/quiz"}
             )
         today_mood = db.query(
             Moods.name
