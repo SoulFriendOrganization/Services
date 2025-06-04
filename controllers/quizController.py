@@ -29,7 +29,7 @@ def generate_quiz(db: Session, quiz_data: QuizGeneratedRequest, user_id: UUID):
         quiz_generated = quiz_agent.generate_quiz(quiz_data.get("theme"),
                                                    quiz_data.get("difficulty"),
                                                     user_condition_summary,
-                                                    total_questions= 5 if getenv("PRODUCTION") 
+                                                    total_questions= 5 if getenv("PRODUCTION") == "True" 
                                                                     else 2)
         if not quiz_generated:
             logger.error("Quiz generation failed, no data returned from AI agent")
