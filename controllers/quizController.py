@@ -176,15 +176,24 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
     """
     try:
         logger.info(f"Submitting answers for quiz attempt {quiz_attempt_id} by user {user_id}")
+        quiz_attempt = db.query(QuizAttempt).filter(
+            QuizAttempt.id == quiz_attempt_id,
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.expired_at > func.now(),
+            QuizAttempt.is_completed == False
+        ).first()
+        if not quiz_attempt:
+            logger.error(f"Quiz attempt {quiz_attempt_id} not found or has expired for user {user_id}")
+            raise ValueError("Quiz attempt not found or has expired")
         question = db.query(Question).filter(Question.id == question_id).first()
         if not question:
             logger.error(f"Question {question_id} not found for quiz attempt {quiz_attempt_id}")
             raise ValueError("Question not found for the quiz attempt")
-        if question.question_type == "multiple_choice" and len(answers) != 1:
+        if question.question_type == "multiple_choice" and len(answers) > 1:
             logger.error(f"Invalid number of answers for question {question_id} in quiz attempt {quiz_attempt_id}")
             raise ValueError("Invalid number of answers for the question")
         answer = AttemptAnswer(
-            quiz_attempt_id=quiz_attempt_id,
+            attempt_id=quiz_attempt_id,
             question_id=question_id,
             user_answer=answers
         )
