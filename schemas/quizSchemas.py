@@ -44,7 +44,7 @@ class QuizEvaluationResponse(BaseModel):
     quiz_attempt_id: UUID
     score: int
     points_earned: int
-    evaluation_details: EvaluationQuestionDetail
+    evaluation_details: List[EvaluationQuestionDetail]
 
 class AttemptIdResponse(BaseModel):
     quiz_attempt_id: UUID
@@ -52,3 +52,6 @@ class AttemptIdResponse(BaseModel):
 class AttemptQuizAnswerResponse(BaseModel):
     message: str
     attempt_answer_id: UUID
+
+class AttemptQuizAnswerRequest(BaseModel):
+    user_answers: List[Optional[Literal["A", "B", "C", "D"]]]

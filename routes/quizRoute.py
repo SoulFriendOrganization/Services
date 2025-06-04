@@ -82,10 +82,10 @@ def get_quiz_attempt_details_endpoint(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     
-@router.post("/submit/{quiz_attempt_id}", status_code=200, response_model=QuizEvaluationResponse)
+@router.put("/submit/{quiz_attempt_id}", status_code=200, response_model=AttemptQuizAnswerResponse)
 def submit_quiz_attempt_endpoint(
     quiz_attempt_id: str,
-    user_answers: List[UserAnswer],
+    user_answers: AttemptQuizAnswerRequest,
     user_id: str = Depends(get_user_id),
     db: Session = Depends(get_db)
 ) -> QuizEvaluationResponse:
