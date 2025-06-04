@@ -104,15 +104,13 @@ def fetch_user_info_endpoint(
         ).first()
         if quiz_attempt:
             logger.warning(f"User has an active quiz attempt that is not completed.")
-            origin_url = Request.headers.get("Origin")
-            response.body = {
+            origin_url = Request.headers.get("Origin") if Request else ""
+            raise HTTPException(
+            status_code=307,
+            detail={
                 "message": "You have an active quiz attempt that is not completed.",
                 "redirect_url": f"{origin_url}/quiz"
             }
-            raise HTTPException(
-            status_code=307,
-            detail="You have an active quiz attempt that is not completed.",
-            headers={"Location": f"{origin_url}/quiz"}
             )
         today_mood = db.query(
             Moods.name
