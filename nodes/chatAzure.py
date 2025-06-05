@@ -42,7 +42,7 @@ class ChatAzureMentalCare():
         Formats the message history into a string for the prompt.
         """
         formatted_history = []
-        max_history_length = min(10, len(message_history))  # Limit to the last 10 messages
+        max_history_length = min(10, len(message_history))
         if isinstance(message_history, list):
             history_to_format = message_history[-max_history_length:]
             for item in history_to_format:
