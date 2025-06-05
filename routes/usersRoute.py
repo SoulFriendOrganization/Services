@@ -109,7 +109,7 @@ def fetch_user_info_endpoint(
             status_code=307,
             detail={
                 "message": "You have an active quiz attempt that is not completed.",
-                "redirect_url": f"{origin_url}/quiz"
+                "redirect_url": f"{origin_url}/quiz/{quiz_attempt.id}"
             }
             )
         today_mood = db.query(
