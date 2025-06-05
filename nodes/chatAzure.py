@@ -37,16 +37,19 @@ class ChatAzureMentalCare():
             max_tokens=5000
         )
 
-    def _formatted_history(self, message_history: MessageHistoryItem) -> str:
+    def _formatted_history(self, message_history: list[MessageHistoryItem]) -> str:
         """
         Formats the message history into a string for the prompt.
         """
         formatted_history = []
-        for item in message_history:
-            role = item.get("role", "user")
-            message = item.get("message", "")
-            if role and message:
-                formatted_history.append(f"<im_start>{role.capitalize()}: {message}<im_end>")
+        max_history_length = min(10, len(message_history))  # Limit to the last 10 messages
+        if isinstance(message_history, list):
+            history_to_format = message_history[-max_history_length:]
+            for item in history_to_format:
+                role = item.get("role", "user")
+                message = item.get("message", "")
+                if role and message:
+                    formatted_history.append(f"<im_start>{role.capitalize()}: {message}<im_end>")
         return "\n".join(formatted_history)
 
     def chat(self, data: ChatAzureMentalCareRequest) -> ChatAzureMentalCareResponse:
