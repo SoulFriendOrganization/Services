@@ -9,7 +9,7 @@ from controllers.chatController import chat, chat_trial
 router = APIRouter()
 
 # ****** Chat Endpoints ******
-@router.post("/", status_code=200, response_model=ChatResponse)
+@router.post("", status_code=200, response_model=ChatResponse)
 def chat_endpoint(
     data: ChatRequest,
     user_id: str = Depends(get_user_id),

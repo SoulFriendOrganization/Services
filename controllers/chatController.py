@@ -49,10 +49,12 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
             logger.error(f"User not found with ID: {user_id}")
             raise ValueError("User not found")
         
-        current_mood = db.query(DailyMood).filter(
+        current_mood = db.query(DailyMood, Moods.name.label("mood_name")).join(
+            Moods, DailyMood.mood_level == Moods.id
+        ).filter(
             DailyMood.user_id == user_id,
             DailyMood.date == func.current_date()
-        ).first()
+        ).first()._asdict()
 
         if not current_mood:
             logger.error(f"Current mood not found for user ID: {user_id}")
@@ -62,9 +64,9 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
             UserCollection.user_id == user_id
         ).first()
 
-        data['user_name'] = user.full_name
-        data['current_mood'] = current_mood.mood_level.name
-        data['notes'] = current_mood.notes if current_mood.notes else None
+        data['user_name'] = user.full_name if user else None
+        data['current_mood'] = current_mood.get('mood_name')
+        data['notes'] = current_mood.get('notes') if current_mood.get('notes') else None
         data['user_condition_summary'] = user_collection.user_condition_summary if user_collection else None
         
         logger.info(f"Sending chat request for user: {user_id} with mood: {data.get('current_mood')}")
@@ -78,7 +80,7 @@ def chat(db: Session, user_id: UUID, data: ChatRequest) -> ChatAzureMentalCareRe
             DailyMood.user_id == user_id,
             DailyMood.date == func.current_date()
         ).update(
-            {DailyMood.notes: data.get('notes')},
+            {DailyMood.notes: response.summary},
             synchronize_session=False
         )
         db.commit()
