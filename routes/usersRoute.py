@@ -99,7 +99,7 @@ def fetch_user_info_endpoint(
         # Cek if the user still has active quiz attempts
         quiz_attempt = db.query(QuizAttempt).filter(
             QuizAttempt.user_id == user_id,
-            QuizAttempt.expired_at < func.now(),
+            QuizAttempt.expired_at > func.now(),
             QuizAttempt.is_completed == False
         ).first()
         if quiz_attempt:
