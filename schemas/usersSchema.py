@@ -38,7 +38,7 @@ class MonthlyMood(BaseModel):
 class FetchedInfoResponse(BaseModel):
     full_name: str
     age: int
-    today_mood: Optional[Literal['happy', 'surprise', 'sad', 'anger', 'disgust', 'fear', 'neutral']]
+    today_mood: Optional[Literal['Happy', 'Surprise', 'Sad', 'Anger', 'Disgust', 'Fear', 'Neutral']]
     monthly_mood: MonthlyMood
     score: Optional[int] = 0
     point_earned: Optional[int] = 0
