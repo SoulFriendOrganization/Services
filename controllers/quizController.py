@@ -207,6 +207,7 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
                 {AttemptAnswer.user_answer: answers.model_dump().get("user_answers", [])},
                 synchronize_session=False
             )
+            db.commit()
         else:
             logger.info(f"Creating new answer record for question {question_id} in quiz attempt {quiz_attempt_id}")
             answer = AttemptAnswer(
@@ -215,8 +216,8 @@ def attempt_quiz_answer(db: Session, quiz_attempt_id: UUID, user_id: UUID, quest
                 user_answer=answers.model_dump().get("user_answers", []),
             )
             db.add(answer)
-        db.commit()
-        db.refresh(answer)
+            db.commit()
+            db.refresh(answer)
         logger.info(f"Answers submitted successfully for quiz attempt {quiz_attempt_id} by user {user_id}")
         response = AttemptQuizAnswerResponse(
             message="Answers submitted successfully",
